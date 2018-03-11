@@ -1,19 +1,7 @@
-import {
-  JupyterLab, JupyterLabPlugin
-} from '@jupyterlab/application';
+// Copyright (c) Jupyter Development Team.
+// Distributed under the terms of the Modified BSD License.
 
 import '../style/index.css';
 
-
-/**
- * Initialization data for the jupyterlab_xls extension.
- */
-const extension: JupyterLabPlugin<void> = {
-  id: 'jupyterlab_xls',
-  autoStart: true,
-  activate: (app: JupyterLab) => {
-    console.log('JupyterLab extension jupyterlab_xls is activated!');
-  }
-};
-
-export default extension;
+export * from './toolbar';
+export * from './widget';
