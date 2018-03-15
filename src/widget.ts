@@ -1,7 +1,7 @@
 // Copyright (c) Jupyter Development Team.
 // Distributed under the terms of the Modified BSD License.
 
-import * as dsv from 'd3-dsv';
+// import * as dsv from 'd3-dsv';
 
 import {
   ActivityMonitor, PathExt
@@ -27,26 +27,26 @@ import {
   PanelLayout, Widget
 } from '@phosphor/widgets';
 
-import {
-  CSVToolbar
-} from './toolbar';
+//import {
+//  XLSToolbar
+//} from './toolbar';
 
-//import * as XLSX from 'xlsx';
-
-/**
- * The class name added to a CSV viewer.
- */
-const CSV_CLASS = 'jp-CSVViewer';
+import * as XLSX from 'xlsx';
 
 /**
- * The class name added to a CSV viewer toolbar.
+ * The class name added to a XLS viewer.
  */
-const CSV_VIEWER_CLASS = 'jp-CSVViewer-toolbar';
+const XLS_CLASS = 'jp-XLSViewer';
 
 /**
- * The class name added to a CSV viewer datagrid.
+ * The class name added to a XLS viewer toolbar.
  */
-const CSV_GRID_CLASS = 'jp-CSVViewer-grid';
+//const XLS_VIEWER_CLASS = 'jp-XLSViewer-toolbar';
+
+/**
+ * The class name added to a XLS viewer datagrid.
+ */
+const XLS_GRID_CLASS = 'jp-XLSViewer-grid';
 
 /**
  * The timeout to wait for change activity to have ceased before rendering.
@@ -55,29 +55,29 @@ const RENDER_TIMEOUT = 1000;
 
 
 /**
- * A viewer for CSV tables.
+ * A viewer for XLS tables.
  */
 export
-class CSVViewer extends Widget implements DocumentRegistry.IReadyWidget {
+class XLSViewer extends Widget implements DocumentRegistry.IReadyWidget {
   /**
-   * Construct a new CSV viewer.
+   * Construct a new XLS viewer.
    */
-  constructor(options: CSVViewer.IOptions) {
+  constructor(options: XLSViewer.IOptions) {
     super();
 
     let context = this._context = options.context;
     let layout = this.layout = new PanelLayout();
 
-    this.addClass(CSV_CLASS);
+    this.addClass(XLS_CLASS);
 
     this._grid = new DataGrid();
-    this._grid.addClass(CSV_GRID_CLASS);
+    this._grid.addClass(XLS_GRID_CLASS);
     this._grid.headerVisibility = 'column';
 
-    this._toolbar = new CSVToolbar({ selected: this._delimiter });
-    this._toolbar.delimiterChanged.connect(this._onDelimiterChanged, this);
-    this._toolbar.addClass(CSV_VIEWER_CLASS);
-    layout.addWidget(this._toolbar);
+      //    this._toolbar = new XLSToolbar({ selected: this._delimiter });
+      //    this._toolbar.delimiterChanged.connect(this._onDelimiterChanged, this);
+      //    this._toolbar.addClass(XLS_VIEWER_CLASS);
+      //    layout.addWidget(this._toolbar);
     layout.addWidget(this._grid);
 
     context.pathChanged.connect(this._onPathChanged, this);
@@ -96,14 +96,14 @@ class CSVViewer extends Widget implements DocumentRegistry.IReadyWidget {
   }
 
   /**
-   * The CSV widget's context.
+   * The XLS widget's context.
    */
   get context(): DocumentRegistry.Context {
     return this._context;
   }
 
   /**
-   * A promise that resolves when the csv viewer is ready.
+   * A promise that resolves when the XLS viewer is ready.
    */
   get ready() {
     return this._ready.promise;
@@ -130,10 +130,10 @@ class CSVViewer extends Widget implements DocumentRegistry.IReadyWidget {
   /**
    * Handle a change in delimiter.
    */
-  private _onDelimiterChanged(sender: CSVToolbar, delimiter: string): void {
-    this._delimiter = delimiter;
-    this._updateGrid();
-  }
+    //  private _onDelimiterChanged(sender: XLSToolbar, delimiter: string): void {
+    //    this._delimiter = delimiter;
+    //    this._updateGrid();
+    //  }
 
   /**
    * Handle a change in path.
@@ -149,12 +149,12 @@ class CSVViewer extends Widget implements DocumentRegistry.IReadyWidget {
     let text = this._context.model.toString();
     let [columns, data] = Private.parse(text, this._delimiter);
     let fields = columns.map(name => ({ name, type: 'string' }));
-    this._grid.model = new JSONModel({ data, schema: { fields } });
+      //    this._grid.model = new JSONModel({ data, schema: { fields } });
   }
 
   private _context: DocumentRegistry.Context;
   private _grid: DataGrid;
-  private _toolbar: CSVToolbar;
+    //  private _toolbar: XLSToolbar;
   private _monitor: ActivityMonitor<any, any> | null = null;
   private _delimiter = ',';
   private _ready = new PromiseDelegate<void>();
@@ -162,17 +162,17 @@ class CSVViewer extends Widget implements DocumentRegistry.IReadyWidget {
 
 
 /**
- * A namespace for `CSVViewer` statics.
+ * A namespace for `XLSViewer` statics.
  */
 export
-namespace CSVViewer {
+namespace XLSViewer {
   /**
-   * Instantiation options for CSV widgets.
+   * Instantiation options for XLS widgets.
    */
   export
   interface IOptions {
     /**
-     * The document context for the CSV being rendered by the widget.
+     * The document context for the XLS being rendered by the widget.
      */
     context: DocumentRegistry.Context;
   }
@@ -180,15 +180,15 @@ namespace CSVViewer {
 
 
 /**
- * A widget factory for CSV widgets.
+ * A widget factory for XLS widgets.
  */
 export
-class CSVViewerFactory extends ABCWidgetFactory<CSVViewer, DocumentRegistry.IModel> {
+class XLSViewerFactory extends ABCWidgetFactory<XLSViewer, DocumentRegistry.IModel> {
   /**
    * Create a new widget given a context.
    */
-  protected createNewWidget(context: DocumentRegistry.Context): CSVViewer {
-    return new CSVViewer({ context });
+  protected createNewWidget(context: DocumentRegistry.Context): XLSViewer {
+    return new XLSViewer({ context });
   }
 }
 
@@ -207,16 +207,20 @@ namespace Private {
    * @returns A tuple of `[columnNames, dataRows]`
    */
   export
-  function parse(text: string, delimiter: string): [string[], dsv.DSVRowString[]] {
+  function parse(fname: string, delimiter: string): [string[], string[]] { // dsv.DSVRowString[]] {
     let columns: string[] = [];
-    let rowFn: RowFn | null = null;
-    let rows = dsv.dsvFormat(delimiter).parseRows(text, row => {
-      if (rowFn) {
-        return rowFn(row);
-      }
-      columns = uniquifyColumns(row);
-      rowFn = makeRowFn(columns);
-    });
+      // let rowFn: RowFn | null = null;
+    const wb: XLSX.WorkBook = readFile('test.xlsx');
+    const ws: XLSX.WorkSheet = wb.Sheets[wb.SheetNames[0]];
+      let rows = XLSX.utils.sheet_to_json(ws);
+      //let columns = rows;
+      //    let rows = dsv.dsvFormat(delimiter).parseRows(text, row => {
+      //      if (rowFn) {
+      //        return rowFn(row);
+      //      }
+      //      columns = uniquifyColumns(row);
+      //      rowFn = makeRowFn(columns);
+      //    });
     return [columns, rows];
   }
 
@@ -240,7 +244,7 @@ namespace Private {
   /**
    * A type alias for a row conversion function.
    */
-  type RowFn = (r: string[]) => dsv.DSVRowString;
+    //  type RowFn = (r: string[]) => dsv.DSVRowString;
 
   /**
    * Create a row conversion function for the given column names.
